@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>LinkedIn Banner - Kartik Umraniya</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #1e1e2f;
+      color: white;
+    }
+
+    .banner {
+      width: 1584px;
+      height: 396px;
+      background-color: #003366;
+      background-size: cover;
+      background-position: center;
+      box-sizing: border-box;
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      position: relative;
+      cursor: pointer;
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .text-container {
+      text-align: right;
+      max-width: 90%;
+      max-height: 90%;
+      overflow: hidden;
+      word-wrap: break-word;
+    }
+
+    .text-container h1,
+    .text-container p {
+      margin: 0;
+      overflow: hidden;
+    }
+
+    .controls {
+      background-color: #2e2e3e;
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 800px;
+    }
+
+    .controls label {
+      font-weight: bold;
+      margin-right: 10px;
+    }
+
+    .controls input,
+    .controls select,
+    .controls button {
+      padding: 8px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      margin-top: 5px;
+    }
+
+    .controls button {
+      background-color: #4caf50;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .controls button:hover {
+      background-color: #45a049;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .alignment-buttons button {
+      background-color: white;
+      border: 1px solid #666;
+    }
+
+    .alignment-buttons button.active {
+      background-color: #4caf50;
+    }
+  </style>
+</head>
+<body>
+
+    
+    <div id="banner" class="banner" onclick="bannerClick(event)">
+        <div id="textContainer" class="text-container">
+          <h1 id="bannerText" class="draggable">Kartik Umraniya</h1>
+          <p id="bannerDesc" class="draggable">Developer in Progress | Always Iterating</p>
+        </div>
+      </div>
+    
+      <!-- Action Buttons -->
+      <div style="text-align:center; margin-top: 20px;">
+        <button id="editBtn" onclick="toggleTextBox()">Edit</button>
+        <button id="saveTextBtn" onclick="saveText()">Save Text</button>
+      </div>
+    
+      <!-- Controls -->
+      <div id="controls" style="display: block; padding: 20px; text-align: center; margin-top: 10px; border-top: 2px solid #ccc;">
+        <!-- Font Size -->
+        <label>Font Size: 
+          <input type="number" id="fontSize" value="28" min="10" max="100" onchange="changeFontSize()">
+        </label>
+    
+        <!-- Font Color -->
+        <label style="margin-left: 20px;">Color: 
+          <input type="color" id="fontColor" onchange="applyFontColor()">
+          <button onclick="applyFontColor()">Save Color</button>
+        </label>
+    
+        <!-- Font Style -->
+        <div style="margin-top: 10px;">
+          <button onclick="toggleBold()">Bold</button>
+          <button onclick="toggleItalic()">Italic</button>
+          <button onclick="toggleUnderline()">Underline</button>
+        </div>
+    
+        <!-- Alignment -->
+        <div class="alignment-buttons" style="margin-top: 10px;">
+          <label style="margin-right: 10px;">Align:</label>
+          <button onclick="setTextAlign('left')">Left</button>
+          <button onclick="setTextAlign('center')">Center</button>
+          <button onclick="setTextAlign('right')">Right</button>
+        </div>
+    
+        <!-- Background Controls -->
+        <div style="margin-top: 20px;">
+          <label for="backgroundSelect">Choose Background:</label>
+          <select id="backgroundSelect" onchange="applyDropdownBackground()">
+            <option value="url('bg1.jpg')">Abstract Lines</option>
+            <option value="url('bg2.jpg')">Tech Grid</option>
+            <option value="url('bg3.jpg')">Digital Sky</option>
+            <option value="#1e1e1e">Dark Solid</option>
+            <option value="#ffffff">White</option>
+          </select>
+          <button onclick="applyDropdownBackground()">Save Background</button>
+        </div>
+    
+        <!-- File Upload -->
+        <div style="margin-top: 10px;">
+          <label>Upload Background:
+            <input type="file" id="bgUpload" accept="image/*" onchange="uploadBackground()">
+          </label>
+        </div>
+    </div>
+    <script>
+        let isTextEditable = false;
+        let preventDownload = false;
+        let isEditing = false;
+
+        // Function to toggle text editing mode
+        function toggleTextBox() {
+        const bannerText = document.getElementById('bannerText');
+        const bannerDesc = document.getElementById('bannerDesc');
+        isTextEditable = !isTextEditable;
+        bannerText.setAttribute("contenteditable", isTextEditable);
+        bannerDesc.setAttribute("contenteditable", isTextEditable);
+        preventDownload = isTextEditable;
+        if (isTextEditable) bannerText.focus();
+
+        // Show/hide controls when 'Edit' is clicked
+        document.getElementById("editBtn").addEventListener("click", function () {
+            const controls = document.getElementById("controls");
+            isEditing = !isEditing;
+            controls.style.display = isEditing ? "block" : "none";
+        });
+        }
+
+        // Function to handle clicks on the banner
+        function bannerClick(e) {
+        // Check if download is not allowed yet
+        if (preventDownload) {
+            alert("Please save the text first!");
+            return; // Don't proceed until text is saved
+        }
+
+        // Confirm to download the edited banner
+        if (confirm("Do you want to download the edited banner with your changes?")) {
+            // Use html2canvas to capture the entire banner
+            html2canvas(document.getElementById('banner')).then(canvas => {
+            const link = document.createElement('a');
+            link.download = "edited-banner.png";
+            link.href = canvas.toDataURL();
+            link.click();
+            }).catch(function (error) {
+            console.error("Error capturing banner:", error);
+            });
+        }
+        }
+
+        // Function to apply font color
+        function applyFontColor() {
+        const color = document.getElementById('fontColor').value;
+        document.getElementById('textContainer').style.color = color;
+        }
+
+        // Function to change font size
+        function changeFontSize() {
+        const size = document.getElementById('fontSize').value;
+        const textContainer = document.getElementById('textContainer');
+        textContainer.style.fontSize = size + "px";
+        }
+
+        // Toggle Bold
+        function toggleBold() {
+        const t1 = document.getElementById('bannerText');
+        const t2 = document.getElementById('bannerDesc');
+        t1.style.fontWeight = t1.style.fontWeight === "bold" ? "normal" : "bold";
+        t2.style.fontWeight = t2.style.fontWeight === "bold" ? "normal" : "bold";
+        }
+
+        // Toggle Italic
+        function toggleItalic() {
+        const t1 = document.getElementById('bannerText');
+        const t2 = document.getElementById('bannerDesc');
+        t1.style.fontStyle = t1.style.fontStyle === "italic" ? "normal" : "italic";
+        t2.style.fontStyle = t2.style.fontStyle === "italic" ? "normal" : "italic";
+        }
+
+        // Toggle Underline
+        function toggleUnderline() {
+        const t1 = document.getElementById('bannerText');
+        const t2 = document.getElementById('bannerDesc');
+        const current = t1.style.textDecoration || "none";
+        const next = current === "underline" ? "none" : "underline";
+        t1.style.textDecoration = next;
+        t2.style.textDecoration = next;
+        }
+
+        // Function to set text alignment
+        function setTextAlign(align) {
+        const banner = document.getElementById('banner');
+        const textContainer = document.getElementById('textContainer');
+
+        // Adjust flex alignment for horizontal positioning
+        if (align === 'left') {
+            banner.style.justifyContent = 'flex-start';
+            textContainer.style.textAlign = 'left';
+            textContainer.style.marginLeft = '100px';
+            textContainer.style.marginRight = '0';
+        } else if (align === 'center') {
+            banner.style.justifyContent = 'center';
+            textContainer.style.textAlign = 'center';
+            textContainer.style.marginLeft = '0';
+            textContainer.style.marginRight = '0';
+        } else if (align === 'right') {
+            banner.style.justifyContent = 'flex-end';
+            textContainer.style.textAlign = 'right';
+            textContainer.style.marginRight = '100px';
+            textContainer.style.marginLeft = '0';
+        }
+
+        // Highlight the active alignment button
+        document.querySelectorAll(".alignment-buttons button").forEach(btn => btn.classList.remove("active"));
+        const btn = Array.from(document.querySelectorAll(".alignment-buttons button")).find(b => b.textContent.toLowerCase() === align);
+        if (btn) btn.classList.add("active");
+        }
+
+        // Function to apply dropdown background selection
+        function applyDropdownBackground() {
+        const selected = document.getElementById('backgroundSelect').value;
+        const banner = document.getElementById('banner');
+
+        if (selected.startsWith("url")) {
+            banner.style.backgroundImage = selected;
+            banner.style.backgroundColor = "";
+        } else {
+            banner.style.backgroundImage = "";
+            banner.style.backgroundColor = selected;
+        }
+        }
+
+        // Function to upload background from file
+        function uploadBackground() {
+        const file = document.getElementById('bgUpload').files[0];
+        const reader = new FileReader();
+        reader.onload = function () {
+            document.getElementById('banner').style.backgroundImage = `url(${reader.result})`;
+            document.getElementById('banner').style.backgroundColor = "";
+        };
+        reader.readAsDataURL(file);
+        }
+
+        // Function to save text (when 'Save Text' is clicked)
+        function saveText() {
+        isTextEditable = false;
+        preventDownload = false;
+        document.getElementById('bannerText').setAttribute("contenteditable", false);
+        document.getElementById('bannerDesc').setAttribute("contenteditable", false);
+        alert("Text saved! Now you can click the banner to download it.");
+        }
+
+        // Draggable Text Logic
+        let isDragging = false;
+        let offsetX, offsetY;
+
+        document.querySelectorAll('.draggable').forEach(element => {
+        element.addEventListener('mousedown', function (e) {
+            if (!isTextEditable) return; // Only allow drag when in edit mode
+            isDragging = true;
+            offsetX = e.clientX - element.getBoundingClientRect().left;
+            offsetY = e.clientY - element.getBoundingClientRect().top;
+            document.addEventListener('mousemove', dragElement);
+            document.addEventListener('mouseup', stopDrag);
+        });
+
+        function dragElement(e) {
+            if (!isDragging) return;
+            element.style.position = 'absolute';
+            element.style.left = e.clientX - offsetX + 'px';
+            element.style.top = e.clientY - offsetY + 'px';
+        }
+
+        function stopDrag() {
+            isDragging = false;
+            document.removeEventListener('mousemove', dragElement);
+            document.removeEventListener('mouseup', stopDrag);
+        }
+        });
+
+    </script>
+  
+  
+
+</body>
+</html>
